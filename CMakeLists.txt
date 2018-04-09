@@ -22,6 +22,8 @@ catkin_package(
   CATKIN_DEPENDS roscpp roslib designator_integration_cpp designator_integration_msgs
 )
 
+find_library(MONGODB_LIBRARIES mongoclient)
+
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS})
@@ -39,7 +41,7 @@ target_link_libraries(mongodb_log_tf
   ${catkin_LIBRARIES}
   ssl
   crypto
-  mongoclient
+  ${MONGODB_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
@@ -47,7 +49,7 @@ target_link_libraries(mongodb_log_pcl
   ${catkin_LIBRARIES}
   ssl
   crypto
-  mongoclient
+  ${MONGODB_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
@@ -55,7 +57,7 @@ target_link_libraries(mongodb_log_img
   ${catkin_LIBRARIES}
   ssl
   crypto
-  mongoclient
+  ${MONGODB_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
@@ -63,7 +65,7 @@ target_link_libraries(mongodb_log_cimg
   ${catkin_LIBRARIES}
   ssl
   crypto
-  mongoclient
+  ${MONGODB_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
@@ -71,7 +73,7 @@ target_link_libraries(mongodb_log_desig
   ${catkin_LIBRARIES}
   ssl
   crypto
-  mongoclient
+  ${MONGODB_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
@@ -79,6 +81,6 @@ target_link_libraries(benchmark_produce_tf
   ${catkin_LIBRARIES}
   ssl
   crypto
-  mongoclient
+  ${MONGODB_LIBRARIES}
   ${Boost_LIBRARIES}
 )
