@@ -27,6 +27,7 @@
 
 #include <rviz_intel/TriangleMesh.h>
 
+using namespace std;
 using namespace mongo;
 
 DBClientConnection *mongodb_conn;

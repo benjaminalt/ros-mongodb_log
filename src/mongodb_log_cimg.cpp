@@ -27,6 +27,7 @@
 
 #include <sensor_msgs/CompressedImage.h>
 
+using namespace std;
 using namespace mongo;
 
 DBClientConnection *mongodb_conn;

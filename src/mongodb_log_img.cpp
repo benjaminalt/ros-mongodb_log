@@ -23,6 +23,7 @@
 
 #include <sensor_msgs/Image.h>
 
+using namespace std;
 using namespace mongo;
 
 DBClientConnection *mongodb_conn;

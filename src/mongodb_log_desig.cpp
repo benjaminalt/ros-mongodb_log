@@ -34,6 +34,7 @@
 #include <designators/Designator.h>
 
 
+using namespace std;
 using namespace mongo;
 
 
