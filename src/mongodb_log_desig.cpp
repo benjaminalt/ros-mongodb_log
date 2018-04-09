@@ -27,6 +27,7 @@
 
 // MongoDB
 #include <mongo/client/dbclient.h>
+#include <mongo/client/init.h>
 
 // Designator Integration
 #include <designator_integration_msgs/DesignatorRequest.h>
@@ -279,6 +280,7 @@ int main(int argc, char** argv) {
 	ros::NodeHandle nh;
 	
 	string strError;
+	mongo::client::initialize();
 	dbMongoDB = new DBClientConnection(true);
 	
 	if(dbMongoDB->connect(strMongoDBHostname, strError)) {

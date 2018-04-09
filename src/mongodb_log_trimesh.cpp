@@ -24,6 +24,7 @@
 
 #include <ros/ros.h>
 #include <mongo/client/dbclient.h>
+#include <mongo/client/init.h>
 
 #include <rviz_intel/TriangleMesh.h>
 
@@ -165,6 +166,7 @@ main(int argc, char **argv)
   ros::NodeHandle n;
 
   std::string errmsg;
+  mongo::client::initialize();
   mongodb_conn = new DBClientConnection(/* auto reconnect*/ true);
   if (! mongodb_conn->connect(mongodb, errmsg)) {
     ROS_ERROR("Failed to connect to MongoDB: %s", errmsg.c_str());
