@@ -83,7 +83,7 @@ def main(argv):
     except socket.error:
         print("Failed to communicate with master")
 
-    mongowriter = MongoWriter(topics=["/tf"], graph_topics = options.graph_topics,
+    mongowriter = MongoWriter(topics=["/tf", '/cram_location_costmap'], graph_topics = options.graph_topics,
                               graph_dir = options.graph_dir,
                               graph_clear = options.graph_clear,
                               graph_daemon = options.graph_daemon,

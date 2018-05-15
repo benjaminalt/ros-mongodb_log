@@ -92,7 +92,8 @@ class MongoWriter(object):
             # to have names that go easier with the query tools, even though there is the theoretical
             # possibility of name classes (hence the check)
             #collname = topic.replace("/", "_")[1:]
-            collname = collection_name
+            collname = collection_name + '_' + str(topic[1:])
+
             if collname in self.workers.keys():
                 print("Two converted topic names clash: %s, ignoring topic %s"
                       % (collname, topic))
