@@ -1,0 +1,9 @@
+PACKAGE_NAME='mongodb_log'
+NODE_NAME='mongodb_log'
+NODE_NAME_TEMPLATE='%smongodb_log'
+WORKER_NODE_NAME = "%smongodb_log_worker_%d_%s"
+QUEUE_MAXSIZE = 100
+
+BACKLOG_WARN_LIMIT = 100
+STATS_LOOPTIME     = 10
+STATS_GRAPHTIME    = 60

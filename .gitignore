@@ -10,3 +10,4 @@
 /bin/mongodb_log_trimesh
 /bin/benchmark_produce_tf
 bin
+.idea
