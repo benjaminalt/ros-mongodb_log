@@ -71,7 +71,7 @@ import roslib.message
 import rostopic
 import rrdtool
 
-from pymongo import Connection, SLOW_ONLY
+from pymongo import MongoClient, SLOW_ONLY
 from pymongo.errors import InvalidDocument, InvalidStringData
 
 import rrdtool
@@ -139,7 +139,7 @@ class WorkerProcess(object):
 	if use_setproctitle:
             setproctitle("mongodb_log %s" % self.topic)
 
-        self.mongoconn = Connection(self.mongodb_host, self.mongodb_port)
+        self.mongoconn = MongoClient(self.mongodb_host, self.mongodb_port)
         self.mongodb = self.mongoconn[self.mongodb_name]
         self.mongodb.set_profiling_level = SLOW_ONLY
 
@@ -298,7 +298,7 @@ class SubprocessWorker(object):
         mongodb_host_port = "%s:%d" % (mongodb_host, mongodb_port)
         collection = "%s.%s" % (mongodb_name, collname)
         nodename = WORKER_NODE_NAME % (self.nodename_prefix, self.id, self.collname)
-        
+
         self.process = subprocess.Popen([cpp_logger, "-t", topic, "-n", nodename,
                                          "-m", mongodb_host_port, "-c", collection] + additional_parameters,
                                         stdout=subprocess.PIPE)
@@ -334,7 +334,7 @@ class MongoWriter(object):
                  all_topics = False, all_topics_interval = 5,
                  exclude_topics = [],
                  mongodb_host=None, mongodb_port=None, mongodb_name="roslog",
-                 no_specific=False, nodename_prefix=""):
+                 no_specific=False, nodename_prefix="",collection_name="/tf"):
         self.graph_dir = graph_dir
         self.graph_topics = graph_topics
         self.graph_clear = graph_clear
@@ -355,6 +355,7 @@ class MongoWriter(object):
         self.out_counter = Counter()
         self.drop_counter = Counter()
         self.workers = {}
+        self.collection_name = str(collection_name)
 
         if self.graph_dir == ".": self.graph_dir = os.getcwd()
         if not os.path.exists(self.graph_dir): os.makedirs(self.graph_dir)
@@ -370,7 +371,7 @@ class MongoWriter(object):
 
         self.init_rrd()
 
-        self.subscribe_topics(set(topics))
+        self.subscribe_topics(set(topics), self.collection_name)
         if self.all_topics:
             print("All topics")
             self.ros_master = rosgraph.masterapi.Master(NODE_NAME_TEMPLATE % self.nodename_prefix)
@@ -379,7 +380,7 @@ class MongoWriter(object):
 
         self.start_all_topics_timer()
 
-    def subscribe_topics(self, topics):
+    def subscribe_topics(self, topics, collection_name):
         for topic in topics:
             if topic and topic[-1] == '/':
                 topic = topic[:-1]
@@ -400,7 +401,8 @@ class MongoWriter(object):
             # pure topic names as collection names and we could then use mongodb[topic], we want
             # to have names that go easier with the query tools, even though there is the theoretical
             # possibility of name classes (hence the check)
-            collname = topic.replace("/", "_")[1:]
+            #collname = topic.replace("/", "_")[1:]
+            collname = collection_name
             if collname in self.workers.keys():
                 print("Two converted topic names clash: %s, ignoring topic %s"
                       % (collname, topic))
@@ -415,14 +417,14 @@ class MongoWriter(object):
         w = None
         node_path = None
         additional_parameters = [];
-       
+
         if not self.no_specific and (msg_class == tfMessage) or (msg_class == TFMessage):
             print("DETECTED transform topic %s, using fast C++ logger" % topic)
             node_path = find_node(PACKAGE_NAME, "mongodb_log_tf")
             #additional_parameters = ["-a"]
             #additional_parameters = ["-k" "0.005" "-l" "0.005" "-g" "0"]
             #additional_parameters = ["-k" "0.025" "-l" "0.025" "-g" "0"]
-            
+
             # Log only when the preceeding entry of that
             # transformation had at least 0.100 vectorial and radial
             # distance to its predecessor transformation, but at least
@@ -487,7 +489,7 @@ class MongoWriter(object):
                               self.nodename_prefix)
 
         if self.graph_topics: self.assert_worker_rrd(collname)
-        
+
         return w
 
 
@@ -538,7 +540,7 @@ class MongoWriter(object):
         ts = self.ros_master.getPublishedTopics("/")
         topics = set([t for t, t_type in ts if t != "/rosout" and t != "/rosout_agg"])
         new_topics = topics - self.topics
-        self.subscribe_topics(new_topics)
+        self.subscribe_topics(new_topics, self.collection_name)
         if restart: self.start_all_topics_timer()
 
     def get_memory_usage_for_pid(self, pid):
@@ -780,12 +782,13 @@ class MongoWriter(object):
 def main(argv):
     parser = OptionParser()
     parser.usage += " [TOPICs...]"
+    parser.add_option("-c", "--coll", dest="collection_name", type="string", help="Name of the collection", default="")
     parser.add_option("--nodename-prefix", dest="nodename_prefix",
                       help="Prefix for worker node names", metavar="ROS_NODE_NAME",
                       default="")
     parser.add_option("--mongodb-host", dest="mongodb_host",
                       help="Hostname of MongoDB", metavar="HOST",
-                      default="localhost")
+                      default="172.17.0.2")
     parser.add_option("--mongodb-port", dest="mongodb_port",
                       help="Hostname of MongoDB", type="int",
                       metavar="PORT", default=27017)
@@ -815,17 +818,17 @@ def main(argv):
                       action="store_true", help="Disable specific loggers")
 
     (options, args) = parser.parse_args()
-
-    if not options.all_topics and len(args) == 0:
-        parser.print_help()
-        return
+    print options.collection_name
+    #if not options.all_topics and len(args) == 0:
+#        parser.print_help()
+#        return
 
     try:
         rosgraph.masterapi.Master(NODE_NAME_TEMPLATE % options.nodename_prefix).getPid()
     except socket.error:
         print("Failed to communicate with master")
 
-    mongowriter = MongoWriter(topics=rospy.myargv(args), graph_topics = options.graph_topics,
+    mongowriter = MongoWriter(topics=["/tf"], graph_topics = options.graph_topics,
                               graph_dir = options.graph_dir,
                               graph_clear = options.graph_clear,
                               graph_daemon = options.graph_daemon,
@@ -836,7 +839,8 @@ def main(argv):
                               mongodb_port=options.mongodb_port,
                               mongodb_name=options.mongodb_name,
                               no_specific=options.no_specific,
-                              nodename_prefix=options.nodename_prefix)
+                              nodename_prefix=options.nodename_prefix,
+                              collection_name=options.collection_name)
 
     mongowriter.run()
     mongowriter.shutdown()
