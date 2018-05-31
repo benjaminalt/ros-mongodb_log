@@ -64,7 +64,7 @@ def main(argv):
     parser.add_option("--graph-clear", dest="graph_clear", default=False,
                       action="store_true",
                       help="Remove existing RRD files.")
-    parser.add_option("--graph-dir", dest="graph_dir", default=".",
+    parser.add_option("--graph-dir", dest="graph_dir", default="/tmp",
                       help="Directory in which to create the graphs")
     parser.add_option("--graph-daemon", dest="graph_daemon", default=False,
                       action="store_true",

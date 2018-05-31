@@ -25,7 +25,7 @@ import rrdtool
 
 class MongoWriter(object):
     def __init__(self, topics = [], graph_topics = False,
-                 graph_dir = ".", graph_clear = False, graph_daemon = False,
+                 graph_dir = "/tmp", graph_clear = False, graph_daemon = False,
                  all_topics = False, all_topics_interval = 5,
                  exclude_topics = [],
                  mongodb_host=None, mongodb_port=None, mongodb_name="roslog",
