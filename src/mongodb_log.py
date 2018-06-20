@@ -43,7 +43,7 @@ def main(argv):
                       default="")
     parser.add_option("--mongodb-host", dest="mongodb_host",
                       help="Hostname of MongoDB", metavar="HOST",
-                      default="172.17.0.2")
+                      default="172.17.42.2")
     parser.add_option("--mongodb-port", dest="mongodb_port",
                       help="Hostname of MongoDB", type="int",
                       metavar="PORT", default=27017)
