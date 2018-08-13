@@ -71,7 +71,7 @@ import roslib.message
 import rostopic
 import rrdtool
 
-from pymongo import Connection, SLOW_ONLY
+from pymongo import MongoClient, SLOW_ONLY
 from pymongo.errors import InvalidDocument, InvalidStringData
 
 import rrdtool
@@ -139,7 +139,7 @@ class WorkerProcess(object):
 	if use_setproctitle:
             setproctitle("mongodb_log %s" % self.topic)
 
-        self.mongoconn = Connection(self.mongodb_host, self.mongodb_port)
+        self.mongoconn = MongoClient(self.mongodb_host, self.mongodb_port)
         self.mongodb = self.mongoconn[self.mongodb_name]
         self.mongodb.set_profiling_level = SLOW_ONLY
 
@@ -416,61 +416,6 @@ class MongoWriter(object):
         node_path = None
         additional_parameters = [];
        
-        if not self.no_specific and (msg_class == tfMessage) or (msg_class == TFMessage):
-            print("DETECTED transform topic %s, using fast C++ logger" % topic)
-            node_path = find_node(PACKAGE_NAME, "mongodb_log_tf")
-            #additional_parameters = ["-a"]
-            #additional_parameters = ["-k" "0.005" "-l" "0.005" "-g" "0"]
-            #additional_parameters = ["-k" "0.025" "-l" "0.025" "-g" "0"]
-            
-            # Log only when the preceeding entry of that
-            # transformation had at least 0.100 vectorial and radial
-            # distance to its predecessor transformation, but at least
-            # every second.
-            additional_parameters = ["-k" "0.100" "-l" "0.100" "-g" "1"]
-            if not node_path:
-                print("FAILED to detect mongodb_log_tf, falling back to generic logger (did not build package?)")
-        elif not self.no_specific and msg_class == PointCloud:
-            print("DETECTED point cloud topic %s, using fast C++ logger" % topic)
-            node_path = find_node(PACKAGE_NAME, "mongodb_log_pcl")
-            if not node_path:
-                print("FAILED to detect mongodb_log_pcl, falling back to generic logger (did not build package?)")
-        elif not self.no_specific and msg_class == Image:
-            print("DETECTED compressed image topic %s, using fast C++ logger" % topic)
-            node_path = find_node(PACKAGE_NAME, "mongodb_log_img")
-            if not node_path:
-                print("FAILED to detect mongodb_log_img, falling back to generic logger (did not build package?)")
-        elif not self.no_specific and msg_class == CompressedImage:
-            print("DETECTED compressed image topic %s, using fast C++ logger" % topic)
-            node_path = find_node(PACKAGE_NAME, "mongodb_log_cimg")
-            if not node_path:
-                print("FAILED to detect mongodb_log_cimg, falling back to generic logger (did not build package?)")
-        elif not self.no_specific and msg_class == DesignatorRequest:
-            print("DETECTED designator request topic %s, using fast C++ logger" % topic)
-            node_path = find_node(PACKAGE_NAME, "mongodb_log_desig")
-            additional_parameters = ["-d" "designator-request"]
-            if not node_path:
-                print("FAILED to detect mongodb_log_desig, falling back to generic logger (did not build package?)")
-        elif not self.no_specific and msg_class == DesignatorResponse:
-            print("DETECTED designator response topic %s, using fast C++ logger" % topic)
-            node_path = find_node(PACKAGE_NAME, "mongodb_log_desig")
-            additional_parameters = ["-d" "designator-response"]
-            if not node_path:
-                print("FAILED to detect mongodb_log_desig, falling back to generic logger (did not build package?)")
-        elif not self.no_specific and msg_class == Designator:
-            print("DETECTED designator topic %s, using fast C++ logger" % topic)
-            node_path = find_node(PACKAGE_NAME, "mongodb_log_desig")
-            additional_parameters = ["-d" "designator"]
-            if not node_path:
-                print("FAILED to detect mongodb_log_desig, falling back to generic logger (did not build package?)")
-        """
-        elif msg_class == TriangleMesh:
-            print("DETECTED triangle mesh topic %s, using fast C++ logger" % topic)
-            node_path = find_node(PACKAGE_NAME, "mongodb_log_trimesh")
-            if not node_path:
-                print("FAILED to detect mongodb_log_trimesh, falling back to generic logger (did not build package?)")
-        """
-
         if node_path:
             w = SubprocessWorker(idnum, topic, collname,
                                  self.in_counter.count, self.out_counter.count,
