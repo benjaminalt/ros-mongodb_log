@@ -3,7 +3,7 @@ project(mongodb_log)
 
 find_package(catkin
   REQUIRED libmongocxx_ros
-  REQUIRED COMPONENTS roscpp roslib designator_integration_cpp designator_integration_msgs)
+  REQUIRED COMPONENTS roscpp roslib)
 
 find_package(Boost REQUIRED COMPONENTS thread filesystem)
 
@@ -20,7 +20,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS ${catkin_INCLUDE_DIRS}
   LIBRARIES
-  CATKIN_DEPENDS roscpp roslib designator_integration_cpp designator_integration_msgs
+  CATKIN_DEPENDS roscpp roslib
 )
 
 include_directories(
@@ -31,10 +31,7 @@ add_executable(mongodb_log_tf src/mongodb_log_tf.cpp)
 add_executable(mongodb_log_pcl src/mongodb_log_pcl.cpp)
 add_executable(mongodb_log_img src/mongodb_log_img.cpp)
 add_executable(mongodb_log_cimg src/mongodb_log_cimg.cpp)
-add_executable(mongodb_log_desig src/mongodb_log_desig.cpp)
 add_executable(benchmark_produce_tf src/benchmark/produce_tf.cpp)
-
-#add_dependencies(mongodb_log_desig designator_integration_generate_messages_cpp)
 
 target_link_libraries(mongodb_log_tf
   ${catkin_LIBRARIES}
@@ -58,13 +55,6 @@ target_link_libraries(mongodb_log_img
 )
 
 target_link_libraries(mongodb_log_cimg
-  ${catkin_LIBRARIES}
-  ssl
-  crypto
-  ${Boost_LIBRARIES}
-)
-
-target_link_libraries(mongodb_log_desig
   ${catkin_LIBRARIES}
   ssl
   crypto
